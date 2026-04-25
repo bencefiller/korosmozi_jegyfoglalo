@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mozi Jegyfoglaló Rendszer</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="navbar-container">
+                <div class="navbar-brand">🎬 Filmezz!</div>
+                <div class="navbar-menu" id="navbarMenu">
+                    <a href="#home" class="nav-link" onclick="showHome()">Filmek</a>
+                    <a href="#bookings" class="nav-link" onclick="showBookings()">Saját Foglalások</a>
+                    <button id="loginBtn" class="nav-button" onclick="showLogin()">Bejelentkezés</button>
+                    <button id="logoutBtn" class="nav-button logout-btn" onclick="logout()" style="display:none;">Kijelentkezés</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Home/Movies Page -->
+            <section id="homePage" class="page active">
+                <div class="hero-section">
+                    <h1>Válassz kedvenc filmedet!</h1>
+                    <p>Ingyenes online jegyfoglalás</p>
+                </div>
+
+                <div class="filters-section">
+                    <input 
+                        type="text" 
+                        id="genreFilter" 
+                        placeholder="Keress műfaj szerint..."
+                        class="filter-input"
+                        onkeyup="filterMovies()"
+                    >
+                </div>
+
+                <div id="moviesContainer" class="movies-grid">
+                    <!-- Films loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Login Page -->
+            <section id="loginPage" class="page">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <h2>Bejelentkezés</h2>
+                        <form id="loginForm" onsubmit="handleLogin(event)">
+                            <div class="form-group">
+                                <label for="loginEmail">Email:</label>
+                                <input 
+                                    type="email" 
+                                    id="loginEmail" 
+                                    required
+                                    placeholder="example@email.com"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword">Jelszó:</label>
+                                <input 
+                                    type="password" 
+                                    id="loginPassword" 
+                                    required
+                                    placeholder="••••••••"
+                                >
+                            </div>
+                            <button type="submit" class="btn btn-primary">Bejelentkezés</button>
+                            <p class="auth-switch">Nincs fiókod? <a href="#" onclick="showRegister()">Regisztrálj most!</a></p>
+                        </form>
+                        <div id="loginError" class="error-message"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Register Page -->
+            <section id="registerPage" class="page">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <h2>Regisztráció</h2>
+                        <form id="registerForm" onsubmit="handleRegister(event)">
+                            <div class="form-group">
+                                <label for="registerName">Teljes név:</label>
+                                <input 
+                                    type="text" 
+                                    id="registerName" 
+                                    required
+                                    placeholder="János Kovács"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="registerEmail">Email:</label>
+                                <input 
+                                    type="email" 
+                                    id="registerEmail" 
+                                    required
+                                    placeholder="example@email.com"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="registerPassword">Jelszó:</label>
+                                <input 
+                                    type="password" 
+                                    id="registerPassword" 
+                                    required
+                                    placeholder="Legalább 8 karakter"
+                                    minlength="8"
+                                >
+                            </div>
+                            <button type="submit" class="btn btn-primary">Regisztráció</button>
+                            <p class="auth-switch">Van már fiókod? <a href="#" onclick="showLogin()">Bejelentkezés!</a></p>
+                        </form>
+                        <div id="registerError" class="error-message"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Movie Detail & Booking Page -->
+            <section id="movieDetailPage" class="page">
+                <div class="movie-detail-container">
+                    <button class="btn-back" onclick="showHome()">← Vissza a filmekhez</button>
+                    <div id="movieDetailContent"></div>
+                </div>
+            </section>
+
+            <!-- Bookings Page -->
+            <section id="bookingsPage" class="page">
+                <div class="bookings-container">
+                    <h2>Saját Foglalások</h2>
+                    <div id="bookingsContent"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
