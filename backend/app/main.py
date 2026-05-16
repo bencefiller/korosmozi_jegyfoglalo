@@ -17,8 +17,8 @@ from app.database import SessionLocal
 db = SessionLocal()
 try:
     if not db.query(Movie).first():
-        print("đźŽ¬ Ăśres az adatbĂˇzis! Automatikus tesztadatok betĂ¶ltĂ©se...")
-        import seed_data
+        print("🎬 Üres az adatbázis! Automatikus tesztadatok betöltése...")
+        from . import seed_data
         seed_data.seed_db()
 finally:
     db.close()
@@ -57,6 +57,15 @@ application.include_router(auth.router)
 @application.get("/api/health")
 def health_check():
     """Egészségügyi ellenőrző végpont, amely megerősíti, hogy az API fut."""
+    return {
+        "status": "healthy",
+        "service": "Mozi Foglaló API"
+    }
+
+
+@application.get("/health")
+def health_check_root():
+    """Backward-compatible health endpoint used by the Dockerfile healthcheck."""
     return {
         "status": "healthy",
         "service": "Mozi Foglaló API"

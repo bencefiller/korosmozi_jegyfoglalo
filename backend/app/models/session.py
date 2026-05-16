@@ -23,9 +23,11 @@ class Session(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     session_data = Column(JSON, nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=False, index=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.utcnow())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Kapcsolatok
+    user = relationship("User", back_populates="sessions")
+
     def __repr__(self) -> str:
         """String representation of Session."""
         return f"<Session(session_id={self.session_id}, user_id={self.user_id})>"

@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # Database
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://cinema_user:cinema_password@localhost:5432/cinema_db"
+        "postgresql://cinema_user:cinema_password@postgres:5432/cinema_db"
     )
     
     # Security
