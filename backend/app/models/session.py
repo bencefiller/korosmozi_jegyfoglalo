@@ -1,5 +1,5 @@
 """Session model for web session management."""
-from sqlalchemy import Column, String, Integer, JSON, DateTime, ForeignKey
+from sqlalchemy import Column, String, Integer, JSON, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -23,7 +23,7 @@ class Session(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     session_data = Column(JSON, nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=False, index=True)
-    created_at = Column(DateTime(timezone=True), server_default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.utcnow())
     
     # Relationships
     user = relationship("User", back_populates="sessions")

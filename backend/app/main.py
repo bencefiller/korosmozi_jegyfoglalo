@@ -1,72 +1,63 @@
-"""Main FastAPI application setup."""
+"""Main FastAPI application entry point."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os
-from app.database import engine, Base
-from app.config import settings
-from app.routes import auth, movies, screenings, bookings
 
-# Create database tables
+from app.database import engine, Base
+from app.routes import movies
+from app.routes import screenings, bookings, auth
+
+# Betöltjük a modelleket, hogy az SQLAlchemy tudja, milyen táblákat kell létrehoznia
+from app.models.movie import Movie
+
+# Adatbázis táblák automatikus létrehozása (ha még nem léteznek)
 Base.metadata.create_all(bind=engine)
 
-# Initialize FastAPI app
+# ===== AUTOMATIKUS ADATFELTÖLTÉS (SEEDING) =====
+from app.database import SessionLocal
+db = SessionLocal()
+try:
+    if not db.query(Movie).first():
+        print("🎬 Üres az adatbázis! Automatikus tesztadatok betöltése...")
+        import seed_data
+        seed_data.seed_db()
+finally:
+    db.close()
+
 application = FastAPI(
-    title="Cinema Booking System",
-    description="A complete online cinema ticket booking system with user authentication, movie listings, and booking management.",
+    title="Cinema Booking System API",
+    description="Backend API for the cinema reservation system.",
     version="1.0.0"
 )
 
-# Add CORS middleware
+# ===== CORS BEÁLLÍTÁS (Kritikus!) =====
+# Ez engedi meg a frontendnek (ami pl. file:// vagy localhost:3000 alatt fut), 
+# hogy kéréseket küldjön a 8000-es porton futó backendnek.
 application.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000", 
+        "http://localhost:8000", 
+        "http://127.0.0.1:8000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "null" # Ha simán dupla kattintással nyitod meg a HTML fájlt
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
-application.include_router(auth.router)
+# ===== ÚTVONALAK (ROUTEREK) BEKÖTÉSE =====
 application.include_router(movies.router)
 application.include_router(screenings.router)
 application.include_router(bookings.router)
+application.include_router(auth.router)
 
-# Mount static files (frontend)
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
-if os.path.exists(frontend_path):
-    application.mount("/static", StaticFiles(directory=frontend_path), name="static")
-
-
-@application.get("/", include_in_schema=False)
-async def root():
-    """Redirect to frontend or serve index.html."""
-    frontend_index = os.path.join(frontend_path, "index.html")
-    if os.path.exists(frontend_index):
-        return FileResponse(frontend_index)
-    return {"message": "Cinema Booking System API. Visit /docs for API documentation."}
-
-
-@application.get("/health", status_code=200)
-async def health_check() -> dict:
-    """Health check endpoint.
-    
-    Returns:
-        Dictionary indicating API health status
-    """
+@application.get("/api/health")
+def health_check():
+    """Health check endpoint to verify API is running."""
     return {
         "status": "healthy",
-        "service": "Cinema Booking System API",
-        "version": "1.0.0"
+        "service": "Cinema Booking API"
     }
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "app.main:application",
-        host="0.0.0.0",
-        port=8000,
-        reload=settings.debug
-    )

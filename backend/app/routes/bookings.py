@@ -1,250 +1,128 @@
-"""Booking routes - CORE BUSINESS LOGIC."""
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+"""Booking routes."""
+from fastapi import APIRouter, Depends, HTTPException, Cookie, Header
+from sqlalchemy.orm import Session as DBSession
+from typing import Optional
+from datetime import datetime, timezone
+from pydantic import BaseModel
+
 from app.database import get_database
 from app.models.booking import Booking
 from app.models.screening import Screening
+from app.models.session import Session as UserSession
 from app.models.user import User
-from app.schemas.booking import BookingCreate
-from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
 
+# Belső Pydantic sémák a beérkező adatok validálására
+class BookingCreate(BaseModel):
+    screening_id: int
+    seat_number: int
 
-@router.post("", response_model=dict, status_code=201)
+def get_current_user(session_id: Optional[str] = Cookie(None), x_session_id: Optional[str] = Header(None), db: DBSession = Depends(get_database)):
+    """Segédfüggvény, amely a süti alapján visszaadja a bejelentkezett felhasználót."""
+    actual_session = x_session_id or session_id
+    if not actual_session:
+        raise HTTPException(status_code=401, detail="Nincs bejelentkezve.")
+        
+    session = db.query(UserSession).filter(UserSession.session_id == actual_session).first()
+    if not session or session.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="Session lejárt, jelentkezz be újra.")
+        
+    user = db.query(User).filter(User.id == session.user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Felhasználó nem található.")
+    return user
+
+@router.post("", status_code=201)
 async def create_booking(
-    booking_data: BookingCreate,
-    current_user: User = Depends(get_current_user),
-    database: Session = Depends(get_database)
-) -> dict:
-    """Create a new booking (ticket reservation).
-    
-    CRITICAL BUSINESS LOGIC:
-    1. Validate screening exists and seat number is valid (1-100)
-    2. Check if seat is already booked (UNIQUE constraint)
-    3. Verify available seats count is > 0
-    4. Decrement available_seats
-    5. Create booking record
-    6. Commit atomically (all or nothing)
-    
-    Args:
-        booking_data: Booking creation data (screening_id, seat_number)
-        current_user: Authenticated user
-        database: Database session
+    request: BookingCreate, 
+    user: User = Depends(get_current_user),
+    db: DBSession = Depends(get_database)
+):
+    screening = db.query(Screening).filter(Screening.id == request.screening_id).first()
+    if not screening:
+        raise HTTPException(status_code=404, detail="Vetítés nem található.")
         
-    Returns:
-        Dictionary with created booking details
+    if request.seat_number < 1 or request.seat_number > screening.total_seats:
+        raise HTTPException(status_code=400, detail="Érvénytelen szék szám.")
         
-    Raises:
-        HTTPException: 400 if validation fails, 404 if screening not found,
-                      409 if seat already booked
-    """
-    # Validate seat number
-    if booking_data.seat_number < 1 or booking_data.seat_number > 100:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Seat number must be between 1 and 100."
-        )
-    
-    # Fetch screening
-    screening = database.query(Screening).filter(
-        Screening.id == booking_data.screening_id
+    # Ellenőrizzük, hogy a szék foglalt-e már
+    existing_booking = db.query(Booking).filter(
+        Booking.screening_id == request.screening_id,
+        Booking.seat_number == request.seat_number,
+        Booking.status == "active"
     ).first()
     
-    if not screening:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Screening not found."
-        )
-    
-    # Check available seats
+    if existing_booking:
+        raise HTTPException(status_code=409, detail="Ez a szék már foglalt.")
+        
     if screening.available_seats <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No available seats for this screening."
-        )
+        raise HTTPException(status_code=400, detail="Nincs több szabad hely a vetítésen.")
+        
+    # Foglalás létrehozása és szabad helyek csökkentése
+    new_booking = Booking(
+        user_id=user.id,
+        screening_id=screening.id,
+        seat_number=request.seat_number,
+        status="active"
+    )
+    screening.available_seats -= 1
     
-    try:
-        # Create booking (UNIQUE constraint will catch duplicate seats)
-        new_booking = Booking(
-            user_id=current_user.id,
-            screening_id=booking_data.screening_id,
-            seat_number=booking_data.seat_number,
-            status="active"
-        )
-        
-        database.add(new_booking)
-        
-        # Decrement available seats atomically
-        screening.available_seats -= 1
-        database.add(screening)
-        
-        # Commit atomically
-        database.commit()
-        database.refresh(new_booking)
-        
-        return {
-            "success": True,
-            "message": "Booking created successfully.",
-            "data": {
-                "id": new_booking.id,
-                "user_id": new_booking.user_id,
-                "screening_id": new_booking.screening_id,
-                "seat_number": new_booking.seat_number,
-                "status": new_booking.status,
-                "booking_datetime": new_booking.booking_datetime.isoformat(),
-                "price": float(screening.price_per_ticket)
-            }
-        }
+    db.add(new_booking)
+    db.commit()
     
-    except IntegrityError:
-        database.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Seat already booked for this screening."
-        )
+    return {"success": True, "data": {"id": new_booking.id}}
 
-
-@router.get("", response_model=dict, status_code=200)
-async def list_user_bookings(
-    current_user: User = Depends(get_current_user),
-    database: Session = Depends(get_database)
-) -> dict:
-    """List all bookings for the authenticated user.
-    
-    Args:
-        current_user: Authenticated user
-        database: Database session
-        
-    Returns:
-        Dictionary with user's bookings
-    """
-    bookings = database.query(Booking).filter(
-        Booking.user_id == current_user.id,
+@router.get("/screening/{screening_id}")
+async def get_booked_seats(screening_id: int, db: DBSession = Depends(get_database)):
+    """Visszaadja egy vetítés összes aktív foglalásának székszámait."""
+    bookings = db.query(Booking).filter(
+        Booking.screening_id == screening_id,
         Booking.status == "active"
     ).all()
     
-    return {
-        "success": True,
-        "data": {
-            "bookings": [
-                {
-                    "id": booking.id,
-                    "screening_id": booking.screening_id,
-                    "seat_number": booking.seat_number,
-                    "status": booking.status,
-                    "booking_datetime": booking.booking_datetime.isoformat(),
-                    "movie_title": booking.screening.movie.title if booking.screening.movie else None,
-                    "screening_datetime": booking.screening.screening_datetime.isoformat(),
-                    "price": float(booking.screening.price_per_ticket)
-                }
-                for booking in bookings
-            ],
-            "total": len(bookings)
-        }
-    }
+    booked_seats = [b.seat_number for b in bookings]
+    return {"success": True, "data": {"booked_seats": booked_seats}}
 
+@router.get("")
+async def get_bookings(user: User = Depends(get_current_user), db: DBSession = Depends(get_database)):
+    """Lekéri a bejelentkezett felhasználó összes foglalását."""
+    bookings = db.query(Booking).filter(Booking.user_id == user.id).order_by(Booking.created_at.desc()).all()
+    
+    result = []
+    for b in bookings:
+        screening = db.query(Screening).filter(Screening.id == b.screening_id).first()
+        movie_title = screening.movie.title if screening and screening.movie else "Ismeretlen film"
+        poster_url = screening.movie.poster_url if screening and screening.movie else None
+        screening_time = screening.screening_datetime if screening else datetime.now()
+        price = screening.price_per_ticket if screening else 0
+        
+        result.append({
+            "id": b.id,
+            "screening_id": b.screening_id,
+            "seat_number": b.seat_number,
+            "status": b.status,
+            "movie_title": movie_title,
+            "poster_url": poster_url,
+            "screening_datetime": screening_time.isoformat() if hasattr(screening_time, 'isoformat') else str(screening_time),
+            "price": float(price)
+        })
+        
+    return {"success": True, "data": {"bookings": result}}
 
-@router.delete("/{booking_id}", response_model=dict, status_code=200)
-async def cancel_booking(
-    booking_id: int,
-    current_user: User = Depends(get_current_user),
-    database: Session = Depends(get_database)
-) -> dict:
-    """Cancel a booking (refund and free up seat).
-    
-    Args:
-        booking_id: Booking ID to cancel
-        current_user: Authenticated user (must own the booking)
-        database: Database session
-        
-    Returns:
-        Dictionary with cancellation confirmation
-        
-    Raises:
-        HTTPException: 403 if user doesn't own booking, 404 if booking not found
-    """
-    booking = database.query(Booking).filter(Booking.id == booking_id).first()
-    
+@router.delete("/{booking_id}")
+async def cancel_booking(booking_id: int, user: User = Depends(get_current_user), db: DBSession = Depends(get_database)):
+    """Foglalás lemondása."""
+    booking = db.query(Booking).filter(Booking.id == booking_id, Booking.user_id == user.id).first()
     if not booking:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Booking not found."
-        )
-    
-    # Verify ownership
-    if booking.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only cancel your own bookings."
-        )
-    
-    # Update booking status
+        raise HTTPException(status_code=404, detail="Foglalás nem található.")
+    if booking.status == "cancelled":
+        raise HTTPException(status_code=400, detail="A foglalás már le van mondva.")
+        
     booking.status = "cancelled"
-    
-    # Free up seat
-    screening = booking.screening
-    screening.available_seats += 1
-    
-    database.add(booking)
-    database.add(screening)
-    database.commit()
-    
-    return {
-        "success": True,
-        "message": "Booking cancelled successfully.",
-        "data": {
-            "id": booking.id,
-            "status": booking.status
-        }
-    }
-
-
-@router.get("/{booking_id}", response_model=dict, status_code=200)
-async def get_booking_details(
-    booking_id: int,
-    current_user: User = Depends(get_current_user),
-    database: Session = Depends(get_database)
-) -> dict:
-    """Get booking details (authenticated user only).
-    
-    Args:
-        booking_id: Booking ID
-        current_user: Authenticated user
-        database: Database session
+    screening = db.query(Screening).filter(Screening.id == booking.screening_id).first()
+    if screening:
+        screening.available_seats += 1
         
-    Returns:
-        Dictionary with booking details
-        
-    Raises:
-        HTTPException: 403 if user doesn't own booking, 404 if booking not found
-    """
-    booking = database.query(Booking).filter(Booking.id == booking_id).first()
-    
-    if not booking:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Booking not found."
-        )
-    
-    if booking.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only view your own bookings."
-        )
-    
-    return {
-        "success": True,
-        "data": {
-            "id": booking.id,
-            "user_id": booking.user_id,
-            "screening_id": booking.screening_id,
-            "seat_number": booking.seat_number,
-            "status": booking.status,
-            "booking_datetime": booking.booking_datetime.isoformat(),
-            "movie_title": booking.screening.movie.title if booking.screening.movie else None,
-            "screening_datetime": booking.screening.screening_datetime.isoformat(),
-            "price": float(booking.screening.price_per_ticket)
-        }
-    }
+    db.commit()
+    return {"success": True, "message": "Foglalás sikeresen lemondva."}

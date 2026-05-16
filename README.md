@@ -58,7 +58,22 @@ http://localhost:8000
 
 **API docs:** http://localhost:8000/docs (Swagger UI)
 
-### Módszer 2: Local Development Setup
+### Módszer 2: Legegyszerűbb lokális futtatás (Oktatói / Tesztelési mód)
+Ezzel a módszerrel sem Docker, sem különálló adatbázis-szerver nem szükséges. A rendszer automatikusan egy lokális SQLite adatbázist (`cinema.db`) hoz létre és tölt fel tesztadatokkal.
+
+```bash
+# 1. Lépj be a backend mappába
+cd backend
+
+# 2. Telepítsd a függőségeket
+pip install -r requirements.txt
+
+# 3. Indítsd el az API-t (Az adatbázis automatikusan létrejön és feltöltődik)
+uvicorn app.main:application --host localhost --port 8000
+```
+**Frontend:** Nyisd meg a `frontend/index.html` fájlt egyszerűen dupla kattintással a böngészőben! (A CORS engedélyezi a lokális fájlmegnyitást is).
+
+### Módszer 3: Hagyományos Local Development Setup (PostgreSQL)
 
 ```bash
 # 1. Python virtuális env létrehozása
@@ -72,14 +87,11 @@ pip install -r requirements.txt
 cp .env.example .env
 # Szerkeszd a .env fájlt a PostgreSQL adatokkal
 
-# 4. Adatbázis inicializálása
-# Futtass SQL sémát az app/schema.py-ból
-
-# 5. Backend indítása
+# 4. Backend indítása
 cd backend
 uvicorn app.main:application --reload --host 0.0.0.0 --port 8000
 
-# 6. Frontend megnyitása (külön ablakban)
+# 5. Frontend megnyitása (külön ablakban)
 # Nyisd meg a frontend/index.html fájlt böngészőben vagy
 # Használj egy egyszerű HTTP szervert: python -m http.server 3000 --directory frontend
 ```

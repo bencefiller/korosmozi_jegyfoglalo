@@ -3,140 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mozi Jegyfoglaló Rendszer</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Körös Mozi Jegyfoglaló</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="app" class="app-container">
-        <!-- Navigation -->
-        <nav class="navbar">
-            <div class="navbar-container">
-                <div class="navbar-brand">🎬 Filmezz!</div>
-                <div class="navbar-menu" id="navbarMenu">
-                    <a href="#home" class="nav-link" onclick="showHome()">Filmek</a>
-                    <a href="#bookings" class="nav-link" onclick="showBookings()">Saját Foglalások</a>
-                    <button id="loginBtn" class="nav-button" onclick="showLogin()">Bejelentkezés</button>
-                    <button id="logoutBtn" class="nav-button logout-btn" onclick="logout()" style="display:none;">Kijelentkezés</button>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand" onclick="showHome()">
+                <img src="img/logo.png" alt="Körös Mozi Logo">
+                Körös Mozi
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+            <div class="navbar-menu" id="navbarMenu">
+                <a href="#" class="nav-link" id="navHome" onclick="showHome()">Filmek</a>
+                <!-- Csak bejelentkezés után lesz látható -->
+                <a href="#" class="nav-link hidden" id="navBookings" onclick="showBookings()">Foglalásaim</a>
+                <button class="nav-button" id="loginBtn" onclick="showLogin()">Bejelentkezés</button>
+                <button class="nav-button logout-btn hidden" id="logoutBtn" onclick="logout()">Kijelentkezés</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content (SPA Konténer) -->
+    <main class="main-content">
+        
+        <!-- FŐOLDAL: Filmek listája -->
+        <div id="homePage" class="page active">
+            
+            <!-- Hero Szekció -->
+            <section class="hero-section">
+                <h1>Üdvözlünk a Mozinkban!</h1>
+                <p>Fedezd fel a legújabb premier filmeket és foglald le a jegyedet kényelmesen, pillanatok alatt.</p>
+            </section>
+
+            <!-- Keresés és Szűrők -->
+            <section class="filters-section">
+                <input type="text" class="filter-input" id="searchInput" placeholder="Keresés cím alapján..." onkeyup="filterMovies()">
+                <select class="filter-input" id="genreFilter" onchange="filterMovies()">
+                    <option value="">Összes műfaj</option>
+                </select>
+            </section>
+
+            <!-- Filmek Grid Layout -->
+            <section class="movies-grid" id="moviesContainer">
+                <!-- A JavaScript ide tölti be a filmeket dinamikusan -->
+            </section>
+        </div>
+
+        <!-- SPA oldalak -->
+        <div id="movieDetailPage" class="page">
+            <div id="movieDetailContent" class="movie-detail-container"></div>
+        </div>
+        
+        <div id="loginPage" class="page">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Bejelentkezés</h2>
+                    <div id="loginError" class="error-message" role="alert"></div>
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="loginEmail">Email cím</label>
+                            <input type="email" id="loginEmail" placeholder="pelda@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Jelszó</label>
+                            <input type="password" id="loginPassword" placeholder="********" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Bejelentkezés</button>
+                    </form>
+                    <div class="auth-switch">
+                        Nincs még fiókod? <a href="#" onclick="showRegister()">Regisztrálj itt</a>
+                    </div>
                 </div>
             </div>
-        </nav>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Home/Movies Page -->
-            <section id="homePage" class="page active">
-                <div class="hero-section">
-                    <h1>Válassz kedvenc filmedet!</h1>
-                    <p>Ingyenes online jegyfoglalás</p>
-                </div>
-
-                <div class="filters-section">
-                    <input 
-                        type="text" 
-                        id="genreFilter" 
-                        placeholder="Keress műfaj szerint..."
-                        class="filter-input"
-                        onkeyup="filterMovies()"
-                    >
-                </div>
-
-                <div id="moviesContainer" class="movies-grid">
-                    <!-- Films loaded dynamically -->
-                </div>
-            </section>
-
-            <!-- Login Page -->
-            <section id="loginPage" class="page">
-                <div class="auth-container">
-                    <div class="auth-card">
-                        <h2>Bejelentkezés</h2>
-                        <form id="loginForm" onsubmit="handleLogin(event)">
-                            <div class="form-group">
-                                <label for="loginEmail">Email:</label>
-                                <input 
-                                    type="email" 
-                                    id="loginEmail" 
-                                    required
-                                    placeholder="example@email.com"
-                                >
-                            </div>
-                            <div class="form-group">
-                                <label for="loginPassword">Jelszó:</label>
-                                <input 
-                                    type="password" 
-                                    id="loginPassword" 
-                                    required
-                                    placeholder="••••••••"
-                                >
-                            </div>
-                            <button type="submit" class="btn btn-primary">Bejelentkezés</button>
-                            <p class="auth-switch">Nincs fiókod? <a href="#" onclick="showRegister()">Regisztrálj most!</a></p>
-                        </form>
-                        <div id="loginError" class="error-message"></div>
+        </div>
+        
+        <div id="registerPage" class="page">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Regisztráció</h2>
+                    <div id="registerError" class="error-message" role="alert"></div>
+                    <form id="registerForm" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label for="registerName">Teljes név</label>
+                            <input type="text" id="registerName" placeholder="Kovács János" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email cím</label>
+                            <input type="email" id="registerEmail" placeholder="pelda@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Jelszó</label>
+                            <input type="password" id="registerPassword" placeholder="Minimum 8 karakter" minlength="8" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Regisztráció</button>
+                    </form>
+                    <div class="auth-switch">
+                        Már van fiókod? <a href="#" onclick="showLogin()">Jelentkezz be</a>
                     </div>
                 </div>
-            </section>
-
-            <!-- Register Page -->
-            <section id="registerPage" class="page">
-                <div class="auth-container">
-                    <div class="auth-card">
-                        <h2>Regisztráció</h2>
-                        <form id="registerForm" onsubmit="handleRegister(event)">
-                            <div class="form-group">
-                                <label for="registerName">Teljes név:</label>
-                                <input 
-                                    type="text" 
-                                    id="registerName" 
-                                    required
-                                    placeholder="János Kovács"
-                                >
-                            </div>
-                            <div class="form-group">
-                                <label for="registerEmail">Email:</label>
-                                <input 
-                                    type="email" 
-                                    id="registerEmail" 
-                                    required
-                                    placeholder="example@email.com"
-                                >
-                            </div>
-                            <div class="form-group">
-                                <label for="registerPassword">Jelszó:</label>
-                                <input 
-                                    type="password" 
-                                    id="registerPassword" 
-                                    required
-                                    placeholder="Legalább 8 karakter"
-                                    minlength="8"
-                                >
-                            </div>
-                            <button type="submit" class="btn btn-primary">Regisztráció</button>
-                            <p class="auth-switch">Van már fiókod? <a href="#" onclick="showLogin()">Bejelentkezés!</a></p>
-                        </form>
-                        <div id="registerError" class="error-message"></div>
-                    </div>
+            </div>
+        </div>
+        
+        <div id="bookingsPage" class="page">
+            <div class="booking-header">
+                <h2>Saját Foglalásaim</h2>
+                <div>
+                    <button class="btn btn-primary booking-filter-btn" id="btnFilterActive" onclick="showBookingsView('active')">Aktív foglalások</button>
+                    <button class="btn btn-secondary booking-filter-btn" id="btnFilterHistory" onclick="showBookingsView('cancelled')">Előzmények</button>
                 </div>
-            </section>
+            </div>
+            <div id="bookingsContent" class="bookings-container"></div>
+        </div>
 
-            <!-- Movie Detail & Booking Page -->
-            <section id="movieDetailPage" class="page">
-                <div class="movie-detail-container">
-                    <button class="btn-back" onclick="showHome()">← Vissza a filmekhez</button>
-                    <div id="movieDetailContent"></div>
-                </div>
-            </section>
+    </main>
 
-            <!-- Bookings Page -->
-            <section id="bookingsPage" class="page">
-                <div class="bookings-container">
-                    <h2>Saját Foglalások</h2>
-                    <div id="bookingsContent"></div>
-                </div>
-            </section>
-        </main>
+    <!-- Video Modal -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeVideoModal()">&times;</span>
+            <div class="video-responsive">
+                <iframe id="youtubePlayer" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="modal-footer">
+                <p class="video-tip">Ha a videó nem töltődik be (a stúdió letiltotta a beágyazást), kattints ide:</p>
+                <a id="youtubeExternalLink" href="" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="icon-inline"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                    Megtekintés a YouTube-on
+                </a>
+            </div>
+        </div>
     </div>
 
-    <script src="/js/app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,31 +1,34 @@
-"""Database configuration and setup."""
+"""Database connection and session management."""
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-from app.config import settings
+from sqlalchemy.orm import sessionmaker, declarative_base
+import os
+from sqlalchemy import event
+from datetime import datetime, timezone
 
-# Create database engine
+# Alapértelmezetten SQLite adatbázist használunk a helyi fejlesztéshez (cinema.db fájl)
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./cinema.db")
+
+# SQLite esetén szükséges ez a beállítás a többszálú végrehajtás miatt
+connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
+
 engine = create_engine(
-    settings.database_url,
-    echo=settings.debug,
-    pool_pre_ping=True,
-    connect_args={"check_same_thread": False} if "sqlite" in settings.database_url else {}
+    SQLALCHEMY_DATABASE_URL, connect_args=connect_args
 )
 
-# Create session factory
+# Kijavítjuk az SQLite hiányzó utcnow() függvényét a Session táblához
+@event.listens_for(engine, "connect")
+def sqlite_engine_connect(dbapi_connection, connection_record):
+    if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+        dbapi_connection.create_function("utcnow", 0, lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"))
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for models
 Base = declarative_base()
 
-
 def get_database():
-    """Dependency injection for database session.
-    
-    Yields:
-        Session: SQLAlchemy session instance
-    """
-    database = SessionLocal()
+    """Dependency function to get a database session."""
+    db = SessionLocal()
     try:
-        yield database
+        yield db
     finally:
-        database.close()
+        db.close()
