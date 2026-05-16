@@ -16,6 +16,10 @@ docker compose up --build
 
 Ez a parancs felépíti a backend Docker image-et, elindítja a PostgreSQL adatbázist és a FastAPI szolgáltatást.
 
+## Jegyfoglaló megtekintése
+- frontend\index.html indítása
+
+
 ## Elérés
 - API: `http://localhost:8000`
 - Dokumentáció: `http://localhost:8000/docs`
