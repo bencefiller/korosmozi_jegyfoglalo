@@ -1,4 +1,4 @@
-"""Screening routes."""
+"""Vetítési útvonalak."""
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -9,10 +9,10 @@ router = APIRouter(prefix="/api/screenings", tags=["screenings"])
 
 @router.get("", response_model=dict, status_code=200)
 async def list_screenings(
-    movie_id: Optional[int] = Query(None, description="Filter by movie ID"),
+    movie_id: Optional[int] = Query(None, description="Szűrés film azonosítója szerint"),
     database: Session = Depends(get_database)
 ) -> dict:
-    """List screenings."""
+    """Vetítések listázása."""
     query = database.query(Screening)
     
     # Ha a frontend egy specifikus filmet keres (pl. /api/screenings?movie_id=1)

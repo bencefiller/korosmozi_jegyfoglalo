@@ -1,4 +1,4 @@
-"""Main FastAPI application entry point."""
+﻿"""A FastAPI alkalmazĂˇs belĂ©pĂ©si pontja."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -6,32 +6,32 @@ from app.database import engine, Base
 from app.routes import movies
 from app.routes import screenings, bookings, auth
 
-# Betöltjük a modelleket, hogy az SQLAlchemy tudja, milyen táblákat kell létrehoznia
+# BetĂ¶ltjĂĽk a modelleket, hogy az SQLAlchemy tudja, milyen tĂˇblĂˇkat kell lĂ©trehoznia
 from app.models.movie import Movie
 
-# Adatbázis táblák automatikus létrehozása (ha még nem léteznek)
+# AdatbĂˇzis tĂˇblĂˇk automatikus lĂ©trehozĂˇsa (ha mĂ©g nem lĂ©teznek)
 Base.metadata.create_all(bind=engine)
 
-# ===== AUTOMATIKUS ADATFELTÖLTÉS (SEEDING) =====
+# ===== AUTOMATIKUS ADATFELTĂ–LTĂ‰S (SEEDING) =====
 from app.database import SessionLocal
 db = SessionLocal()
 try:
     if not db.query(Movie).first():
-        print("🎬 Üres az adatbázis! Automatikus tesztadatok betöltése...")
+        print("đźŽ¬ Ăśres az adatbĂˇzis! Automatikus tesztadatok betĂ¶ltĂ©se...")
         import seed_data
         seed_data.seed_db()
 finally:
     db.close()
 
 application = FastAPI(
-    title="Cinema Booking System API",
-    description="Backend API for the cinema reservation system.",
+    title="Mozi JegyfoglalĂł Rendszer API",
+    description="A mozi jegyfoglalĂł rendszer backend API-ja.",
     version="1.0.0"
 )
 
-# ===== CORS BEÁLLÍTÁS (Kritikus!) =====
+# ===== CORS BEĂLLĂŤTĂS (Kritikus!) =====
 # Ez engedi meg a frontendnek (ami pl. file:// vagy localhost:3000 alatt fut), 
-# hogy kéréseket küldjön a 8000-es porton futó backendnek.
+# hogy kĂ©rĂ©seket kĂĽldjĂ¶n a 8000-es porton futĂł backendnek.
 application.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -41,14 +41,14 @@ application.add_middleware(
         "http://127.0.0.1:8000",
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "null" # Ha simán dupla kattintással nyitod meg a HTML fájlt
+        "null" # Ha simĂˇn dupla kattintĂˇssal nyitod meg a HTML fĂˇjlt
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ===== ÚTVONALAK (ROUTEREK) BEKÖTÉSE =====
+# ===== ĂšTVONALAK (ROUTEREK) BEKĂ–TĂ‰SE =====
 application.include_router(movies.router)
 application.include_router(screenings.router)
 application.include_router(bookings.router)
@@ -56,8 +56,8 @@ application.include_router(auth.router)
 
 @application.get("/api/health")
 def health_check():
-    """Health check endpoint to verify API is running."""
+    """Egészségügyi ellenőrző végpont, amely megerősíti, hogy az API fut."""
     return {
         "status": "healthy",
-        "service": "Cinema Booking API"
+        "service": "Mozi Foglaló API"
     }

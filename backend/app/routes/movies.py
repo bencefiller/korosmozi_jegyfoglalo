@@ -1,4 +1,4 @@
-"""Movie routes."""
+"""Film útvonalak."""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -11,21 +11,21 @@ router = APIRouter(prefix="/api/movies", tags=["movies"])
 
 @router.get("", response_model=dict, status_code=200)
 async def list_movies(
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(20, ge=1, le=100, description="Maximum records to return"),
-    genre: Optional[str] = Query(None, description="Filter by genre"),
+    skip: int = Query(0, ge=0, description="Hány rekordot hagyjon ki"),
+    limit: int = Query(20, ge=1, le=100, description="Maximális visszaadott rekordok száma"),
+    genre: Optional[str] = Query(None, description="Szűrés műfaj szerint"),
     database: Session = Depends(get_database)
 ) -> dict:
-    """List all movies with pagination and optional filtering.
+    """Az összes film listázása lapozással és opcionális szűréssel.
     
     Args:
-        skip: Number of records to skip
-        limit: Maximum records to return
-        genre: Optional genre filter
-        database: Database session
+        skip: Hány rekordot hagyjon ki
+        limit: Maximális visszaadott rekordok száma
+        genre: Opcionális műfaj szűrés
+        database: Adatbázis-session
         
     Returns:
-        Dictionary with movies list and pagination info
+        Szótár filmlista és lapozási adatokkal
     """
     query = database.query(Movie)
     
@@ -66,24 +66,24 @@ async def get_movie(
     movie_id: int,
     database: Session = Depends(get_database)
 ) -> dict:
-    """Get movie details by ID.
+    """A film részleteinek lekérése azonosító alapján.
     
     Args:
-        movie_id: Movie ID
-        database: Database session
+        movie_id: Film azonosító
+        database: Adatbázis-session
         
     Returns:
-        Dictionary with movie details and screenings
+        Szótár a film részleteivel és vetítéseivel
         
     Raises:
-        HTTPException: 404 if movie not found
+        HTTPException: 404 ha a film nem található
     """
     movie = database.query(Movie).filter(Movie.id == movie_id).first()
     
     if not movie:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Movie not found."
+            detail="A film nem található."
         )
     
     return {

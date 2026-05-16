@@ -1,14 +1,14 @@
-"""SQL schema creation script for Cinema Booking System."""
+"""SQL séma létrehozási szkript a Mozi Jegyfoglaló rendszerhez."""
 
 CREATE_TABLES_SQL = """
--- Drop existing tables if needed (only for development)
+-- Szükség esetén létező táblák törlése (csak fejlesztéshez)
 -- DROP TABLE IF EXISTS bookings CASCADE;
 -- DROP TABLE IF EXISTS sessions CASCADE;
 -- DROP TABLE IF EXISTS screenings CASCADE;
 -- DROP TABLE IF EXISTS movies CASCADE;
 -- DROP TABLE IF EXISTS users CASCADE;
 
--- Create users table
+-- Felhasználók tábla létrehozása
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create movies table
+-- Filmek tábla létrehozása
 CREATE TABLE IF NOT EXISTS movies (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS movies (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create screenings table (vetítések)
+-- Vetítések tábla létrehozása
 CREATE TABLE IF NOT EXISTS screenings (
     id SERIAL PRIMARY KEY,
     movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS screenings (
     UNIQUE(screen_number, screening_datetime)
 );
 
--- Create bookings table (foglalások)
+-- Foglalások tábla létrehozása
 CREATE TABLE IF NOT EXISTS bookings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     UNIQUE(screening_id, seat_number)
 );
 
--- Create sessions table for web session management
+-- Session tábla létrehozása a web session kezeléséhez
 CREATE TABLE IF NOT EXISTS sessions (
     session_id VARCHAR(255) PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for better performance
+-- Indexek létrehozása jobb teljesítményhez
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_screening_id ON bookings(screening_id);
 CREATE INDEX IF NOT EXISTS idx_screenings_movie_id ON screenings(movie_id);
@@ -75,16 +75,16 @@ CREATE INDEX IF NOT EXISTS idx_screenings_datetime ON screenings(screening_datet
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
 
--- Create sample data for testing
+-- Mintaadatok létrehozása teszteléshez
 
--- Insert sample users
+-- Minta felhasználók beszúrása
 INSERT INTO users (email, password_hash, full_name) VALUES
     ('user1@example.com', '$2b$12$6q2CZ0gKmk.yANfBH6JUr.8SRuKnXY1bPyV8g6Nj7h6Z3Y3Zx3T.e', 'János Kovács'),
     ('user2@example.com', '$2b$12$6q2CZ0gKmk.yANfBH6JUr.8SRuKnXY1bPyV8g6Nj7h6Z3Y3Zx3T.e', 'Márta Szabó'),
     ('user3@example.com', '$2b$12$6q2CZ0gKmk.yANfBH6JUr.8SRuKnXY1bPyV8g6Nj7h6Z3Y3Zx3T.e', 'Péter Nagy')
 ON CONFLICT DO NOTHING;
 
--- Insert sample movies
+-- Minta filmek beszúrása
 INSERT INTO movies (title, description, duration_minutes, genre, release_date, poster_url) VALUES
     ('Interstellar', 'Egy csapat utazik a fekete lyukon keresztül más bolygók felfedezésére.', 169, 'Science Fiction', '2014-11-07', 'https://via.placeholder.com/300x450?text=Interstellar'),
     ('The Dark Knight', 'Batman megcsapja a Joker-t Gotham városért való küzdelemben.', 152, 'Action', '2008-07-18', 'https://via.placeholder.com/300x450?text=The+Dark+Knight'),
@@ -93,7 +93,7 @@ INSERT INTO movies (title, description, duration_minutes, genre, release_date, p
     ('Avatar', 'Egy paralizált katona egy hatalmas humanoid test vezérlésére képes.', 162, 'Science Fiction', '2009-12-18', 'https://via.placeholder.com/300x450?text=Avatar')
 ON CONFLICT DO NOTHING;
 
--- Insert sample screenings
+-- Minta vetítések beszúrása
 INSERT INTO screenings (movie_id, screen_number, screening_datetime, available_seats, total_seats, price_per_ticket) VALUES
     (1, 1, '2026-04-26 14:00:00+02:00', 80, 100, 1200.00),
     (1, 1, '2026-04-26 18:00:00+02:00', 45, 100, 1500.00),

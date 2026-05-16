@@ -1,4 +1,4 @@
-"""Database connection and session management."""
+"""Adatbázis-kapcsolat és session kezelés."""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os

@@ -133,4 +133,4 @@ def test_get_current_user_without_auth(client):
     response = client.get("/api/auth/me")
     
     assert response.status_code == 401
-    assert "Not authenticated" in response.json()["detail"]
+    assert "Nincs bejelentkezve" in response.json()["detail"]

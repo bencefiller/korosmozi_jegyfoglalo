@@ -1,4 +1,4 @@
-"""Booking routes."""
+"""Foglalási útvonalak."""
 from fastapi import APIRouter, Depends, HTTPException, Cookie, Header
 from sqlalchemy.orm import Session as DBSession
 from typing import Optional

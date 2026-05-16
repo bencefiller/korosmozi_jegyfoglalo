@@ -1,4 +1,4 @@
-"""User model for Cinema Booking System."""
+"""Felhasználó modell a Mozi Jegyfoglaló rendszerhez."""
 from sqlalchemy import Column, Integer, String, DateTime, func
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -6,17 +6,17 @@ from app.database import Base
 
 
 class User(Base):
-    """User model representing a cinema customer.
+    """Felhasználó modell, amely egy mozi ügyfelet képvisel.
     
     Attributes:
-        id: Primary key
-        email: User email (unique)
-        password_hash: Hashed password using bcrypt
-        full_name: User's full name
-        created_at: Account creation timestamp
-        updated_at: Last update timestamp
-        bookings: Relationship to Booking model
-        sessions: Relationship to Session model
+        id: Elsődleges kulcs
+        email: Felhasználó email címe (egyedi)
+        password_hash: Bcrypt-tel hash-elt jelszó
+        full_name: Felhasználó teljes neve
+        created_at: Fiók létrehozásának időbélyege
+        updated_at: Utolsó frissítés időbélyege
+        bookings: Kapcsolat a Booking modellel
+        sessions: Kapcsolat a Session modellel
     """
     
     __tablename__ = "users"
@@ -28,10 +28,10 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
-    # Relationships
+    # Kapcsolatok
     bookings = relationship("Booking", back_populates="user", cascade="all, delete-orphan")
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
-        """String representation of User."""
+        """Felhasználó szöveges reprezentációja."""
         return f"<User(id={self.id}, email={self.email}, full_name={self.full_name})>"

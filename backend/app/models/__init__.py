@@ -1,4 +1,4 @@
-"""Database models for Cinema Booking System."""
+"""Adatbázis-modellek a Mozi Jegyfoglaló rendszerhez."""
 
 from app.models.user import User
 from app.models.movie import Movie

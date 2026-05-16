@@ -1,4 +1,4 @@
-"""Booking model for Cinema Booking System."""
+"""Foglalás modell a Mozi Jegyfoglaló rendszerhez."""
 from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, func, UniqueConstraint, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -7,25 +7,25 @@ from app.database import Base
 
 
 class BookingStatus(PyEnum):
-    """Enum for booking status."""
+    """Enum a foglalás státuszához."""
     ACTIVE = "active"
     CANCELLED = "cancelled"
 
 
 class Booking(Base):
-    """Booking model representing a ticket reservation.
+    """Foglalás modell, amely egy jegyfoglalást képvisel.
     
     Attributes:
-        id: Primary key
-        user_id: Foreign key to User
-        screening_id: Foreign key to Screening
-        seat_number: Seat number (1-100)
-        booking_datetime: When the booking was made
-        status: Booking status (active or cancelled)
-        created_at: Record creation timestamp
-        updated_at: Last update timestamp
-        user: Relationship to User model
-        screening: Relationship to Screening model
+        id: Elsődleges kulcs
+        user_id: Idegen kulcs a User táblára
+        screening_id: Idegen kulcs a Screening táblára
+        seat_number: Szék száma (1-100)
+        booking_datetime: Mikor készült a foglalás
+        status: Foglalás státusza (active vagy cancelled)
+        created_at: Rekord létrehozási időbélyeg
+        updated_at: Utolsó frissítés időbélyege
+        user: Kapcsolat a User modellel
+        screening: Kapcsolat a Screening modellel
     """
     
     __tablename__ = "bookings"
@@ -42,10 +42,10 @@ class Booking(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
-    # Relationships
+    # Kapcsolatok
     user = relationship("User", back_populates="bookings")
     screening = relationship("Screening", back_populates="bookings")
-    
+
     def __repr__(self) -> str:
-        """String representation of Booking."""
+        """Foglalás szöveges reprezentációja."""
         return f"<Booking(id={self.id}, user_id={self.user_id}, screening_id={self.screening_id}, seat={self.seat_number})>"

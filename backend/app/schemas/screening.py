@@ -1,4 +1,4 @@
-"""Screening schemas for request/response validation."""
+"""Vetítés sémák kérés/válasz validáláshoz."""
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, List
@@ -6,14 +6,14 @@ from decimal import Decimal
 
 
 class ScreeningCreate(BaseModel):
-    """Schema for creating a screening."""
+    """Vetítés létrehozásához használt séma."""
     
-    movie_id: int = Field(..., gt=0, description="Movie ID")
-    screen_number: int = Field(..., gt=0, description="Screen number")
-    screening_datetime: datetime = Field(..., description="Screening date and time")
-    available_seats: int = Field(..., gt=0, description="Number of available seats")
-    total_seats: int = Field(100, gt=0, description="Total seat capacity")
-    price_per_ticket: Decimal = Field(..., gt=0, decimal_places=2, description="Price per ticket")
+    movie_id: int = Field(..., gt=0, description="Film azonosító")
+    screen_number: int = Field(..., gt=0, description="Vetítőterem száma")
+    screening_datetime: datetime = Field(..., description="Vetítés időpontja")
+    available_seats: int = Field(..., gt=0, description="Elérhető székek száma")
+    total_seats: int = Field(100, gt=0, description="Összes ülőhely")
+    price_per_ticket: Decimal = Field(..., gt=0, decimal_places=2, description="Jegyár")
 
 
 class ScreeningResponse(BaseModel):

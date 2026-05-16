@@ -1,4 +1,4 @@
-"""Screening model for Cinema Booking System."""
+"""Vetítés modell a Mozi Jegyfoglaló rendszerhez."""
 from sqlalchemy import Column, Integer, DateTime, Numeric, ForeignKey, func, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -6,20 +6,20 @@ from app.database import Base
 
 
 class Screening(Base):
-    """Screening model representing a movie screening session.
+    """Vetítés modell, amely egy film vetítését képviseli.
     
     Attributes:
-        id: Primary key
-        movie_id: Foreign key to Movie
-        screen_number: Cinema screen number
-        screening_datetime: Date and time of screening
-        available_seats: Number of available seats
-        total_seats: Total capacity of the screen
-        price_per_ticket: Price per ticket in currency units
-        created_at: Record creation timestamp
-        updated_at: Last update timestamp
-        movie: Relationship to Movie model
-        bookings: Relationship to Booking model
+        id: Elsődleges kulcs
+        movie_id: Idegen kulcs a Movie táblára
+        screen_number: Vetítőterem száma
+        screening_datetime: A vetítés dátuma és ideje
+        available_seats: Elérhető székek száma
+        total_seats: A terem teljes kapacitása
+        price_per_ticket: Jegy ára pénzegységben
+        created_at: Rekord létrehozási időbélyeg
+        updated_at: Utolsó frissítés időbélyege
+        movie: Kapcsolat a Movie modellel
+        bookings: Kapcsolat a Booking modellel
     """
     
     __tablename__ = "screenings"
@@ -37,10 +37,10 @@ class Screening(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
-    # Relationships
+    # Kapcsolatok
     movie = relationship("Movie", back_populates="screenings")
     bookings = relationship("Booking", back_populates="screening", cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
-        """String representation of Screening."""
+        """Vetítés szöveges reprezentációja."""
         return f"<Screening(id={self.id}, movie_id={self.movie_id}, seats={self.available_seats}/{self.total_seats})>"

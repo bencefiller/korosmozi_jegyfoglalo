@@ -1,4 +1,4 @@
-"""Dependency injection functions for FastAPI."""
+"""FastAPI-függőséginjektálási segédfüggvények."""
 from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -11,25 +11,25 @@ async def get_current_user(
     session_id: Optional[str] = Cookie(None),
     database: Session = Depends(get_database)
 ) -> User:
-    """Get current authenticated user from session cookie.
+    """A jelenlegi hitelesített felhasználó lekérése a session sütiből.
     
     Args:
-        session_id: Session ID from cookie
-        database: Database session
+        session_id: A süti alapján kapott session azonosító
+        database: Adatbázis-session
         
     Returns:
-        User object if authenticated
+        Felhasználó objektum, ha hitelesített
         
     Raises:
-        HTTPException: 401 if not authenticated
+        HTTPException: 401 ha nincs hitelesítve
     """
     if not session_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated. Please login first."
+            detail="Nem vagy hitelesítve. Kérlek jelentkezz be előbb."
         )
     
-    # Fetch session from database
+    # Session lekérése az adatbázisból
     session_record = database.query(SessionModel).filter(
         SessionModel.session_id == session_id,
         SessionModel.expires_at > datetime.utcnow()
@@ -38,10 +38,10 @@ async def get_current_user(
     if not session_record or not session_record.user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired session."
+            detail="Érvénytelen vagy lejárt session."
         )
     
-    # Fetch user
+    # Felhasználó lekérése
     user = database.query(User).filter(User.id == session_record.user_id).first()
     if not user:
         raise HTTPException(
@@ -56,14 +56,14 @@ async def get_optional_user(
     session_id: Optional[str] = Cookie(None),
     database: Session = Depends(get_database)
 ) -> Optional[User]:
-    """Get current user if authenticated, otherwise None.
+    """Lekéri a jelenlegi felhasználót, ha hitelesített, egyébként None-t ad.
     
     Args:
-        session_id: Session ID from cookie
-        database: Database session
+        session_id: A süti alapján kapott session azonosító
+        database: Adatbázis-session
         
     Returns:
-        User object if authenticated, None otherwise
+        Felhasználó objektum, ha hitelesített, egyébként None
     """
     if not session_id:
         return None

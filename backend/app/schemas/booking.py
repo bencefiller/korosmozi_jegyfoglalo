@@ -1,4 +1,4 @@
-"""Booking schemas for request/response validation."""
+"""Foglalás sémák kérés/válasz validáláshoz."""
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
@@ -6,10 +6,10 @@ from decimal import Decimal
 
 
 class BookingCreate(BaseModel):
-    """Schema for creating a booking."""
+    """Foglalás létrehozásához használt séma."""
     
-    screening_id: int = Field(..., gt=0, description="Screening ID")
-    seat_number: int = Field(..., ge=1, le=500, description="Seat number (1-500)")
+    screening_id: int = Field(..., gt=0, description="Vetítés azonosítója")
+    seat_number: int = Field(..., ge=1, le=500, description="Szék száma (1-500)")
 
 
 class BookingResponse(BaseModel):

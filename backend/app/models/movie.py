@@ -1,4 +1,4 @@
-"""Movie model for Cinema Booking System."""
+"""Film modell a Mozi Jegyfoglaló rendszerhez."""
 from sqlalchemy import Column, Integer, String, Text, Date, DateTime, func
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -6,19 +6,19 @@ from app.database import Base
 
 
 class Movie(Base):
-    """Movie model representing a cinema film.
+    """Film modell, amely egy mozi filmet képvisel.
     
     Attributes:
-        id: Primary key
-        title: Movie title
-        description: Movie description
-        duration_minutes: Duration in minutes
-        genre: Movie genre
-        release_date: Original release date
-        poster_url: URL to movie poster image
-        created_at: Record creation timestamp
-        updated_at: Last update timestamp
-        screenings: Relationship to Screening model
+        id: Elsődleges kulcs
+        title: Film címe
+        description: Film leírása
+        duration_minutes: Hossz percekben
+        genre: Film műfaja
+        release_date: Eredeti megjelenési dátum
+        poster_url: Film plakát URL-je
+        created_at: Rekord létrehozási időbélyeg
+        updated_at: Utolsó frissítés időbélyege
+        screenings: Kapcsolat a Screening modellel
     """
     
     __tablename__ = "movies"
@@ -33,9 +33,9 @@ class Movie(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
-    # Relationships
+    # Kapcsolatok
     screenings = relationship("Screening", back_populates="movie", cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
-        """String representation of Movie."""
+        """Film szöveges reprezentációja."""
         return f"<Movie(id={self.id}, title={self.title}, duration={self.duration_minutes}min)>"

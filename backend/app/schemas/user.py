@@ -1,15 +1,15 @@
-"""User schemas for request/response validation."""
+"""Felhasználó sémák kérés/válasz validáláshoz."""
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from typing import Optional
 
 
 class UserRegister(BaseModel):
-    """Schema for user registration."""
+    """Felhasználó regisztrációs séma."""
     
-    email: EmailStr = Field(..., description="User email address")
-    password: str = Field(..., min_length=8, max_length=255, description="Password (minimum 8 characters)")
-    full_name: str = Field(..., min_length=2, max_length=255, description="User's full name")
+    email: EmailStr = Field(..., description="Felhasználó email címe")
+    password: str = Field(..., min_length=8, max_length=255, description="Jelszó (minimum 8 karakter)")
+    full_name: str = Field(..., min_length=2, max_length=255, description="Felhasználó teljes neve")
 
 
 class UserLogin(BaseModel):

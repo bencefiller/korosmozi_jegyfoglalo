@@ -1,9 +1,9 @@
-/* Cinema Booking System Frontend JavaScript */
+/* Mozi Jegyfoglaló frontend JavaScript */
 
-// API Base URL
+// API alap URL
 const API_BASE_URL = "http://localhost:8000/api";
 
-// Global State
+// Globális állapot
 let currentUser = null;
 let allMovies = [];
 let currentScreenings = [];
@@ -12,7 +12,7 @@ let selectedScreening = null;
 let selectedSeats = [];
 let userBookings = [];
 
-// Initialize on page load
+// Inicializálás oldal betöltésekor
 document.addEventListener("DOMContentLoaded", () => {
     checkAuthStatus();
     loadMovies();
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// ===== AUTHENTICATION FUNCTIONS =====
+// ===== HITELLESÍTÉSI FUNKCIÓK =====
 
 function showLogin() {
     hideAllPages();
@@ -255,7 +255,7 @@ async function logout() {
     }
 }
 
-// ===== MOVIES & SCREENINGS FUNCTIONS =====
+// ===== FILMEK ÉS VETÍTÉSEK FUNKCIÓK =====
 
 async function loadMovies() {
     try {
@@ -571,7 +571,7 @@ async function showBookingForm(screeningId) {
         console.error("Nem sikerült lekérni a foglalt székeket:", err);
     }
 
-    // Create modal or update UI for seat selection
+    // Modal létrehozása vagy az UI frissítése a szék kiválasztásához
     const seatGrid = createSeatGrid(screening.total_seats, actuallyBookedSeats, screening.price_per_ticket);
 
     const bookingForm = `
@@ -732,7 +732,7 @@ async function confirmBooking() {
     }
 }
 
-// ===== USER BOOKINGS FUNCTIONS =====
+// ===== FELHASZNÁLÓI FOGLALÁSOK FUNKCIÓI =====
 
 async function loadUserBookings() {
     try {

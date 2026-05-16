@@ -1,1 +1,1 @@
-"""Cinema Booking System Backend."""
+"""Mozi Jegyfoglaló rendszer backendje."""

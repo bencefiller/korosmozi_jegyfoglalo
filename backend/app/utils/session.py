@@ -1,21 +1,21 @@
-"""Session management utilities."""
+"""Session kezeléséhez szükséges segédfüggvények."""
 import secrets
 from datetime import datetime, timedelta
 
 
 def generate_session_id() -> str:
-    """Generate a secure random session ID.
+    """Biztonságos, véletlenszerű session azonosító előállítása.
     
     Returns:
-        Random 32-byte hex string
+        Véletlenszerű 32 bájtos hex string
     """
     return secrets.token_hex(32)
 
 
 def get_session_expiry() -> datetime:
-    """Get session expiry time (24 hours from now).
+    """A session lejárati idejének lekérése (24 órával később).
     
     Returns:
-        Datetime object for session expiry
+        Datetime objektum a session lejáratához
     """
     return datetime.utcnow() + timedelta(hours=24)

@@ -1,4 +1,4 @@
-"""Pytest configuration and fixtures."""
+"""Pytest konfiguráció és fixture-ek."""
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +8,7 @@ from app.database import Base, get_database
 from app.main import application
 
 
-# Use in-memory SQLite for testing
+# Teszteléshez in-memory SQLite használata
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
 engine = create_engine(
@@ -18,7 +18,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 
 def override_get_database():
-    """Override database dependency for testing."""
+    """Adatbázis-függőség felülírása teszteléshez."""
     database = TestingSessionLocal()
     try:
         yield database
@@ -26,36 +26,36 @@ def override_get_database():
         database.close()
 
 
-# Create tables for testing
+# Táblák létrehozása teszteléshez
 Base.metadata.create_all(bind=engine)
 
-# Override dependency
+# Függőség felülírása
 application.dependency_overrides[get_database] = override_get_database
 
 
 @pytest.fixture
 def database():
-    """Fixture providing test database session."""
-    # Create tables
+    """Fixture, amely tesztadatbázis-sessiont biztosít."""
+    # Táblák létrehozása
     Base.metadata.create_all(bind=engine)
     
     database = TestingSessionLocal()
     yield database
     
     database.close()
-    # Cleanup
+    # Takarítás
     Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture
 def client():
-    """Fixture providing FastAPI test client."""
+    """Fixture, amely FastAPI tesztklienst biztosít."""
     return TestClient(application)
 
 
 @pytest.fixture
 def sample_user(database, client):
-    """Fixture creating a sample user for testing."""
+    """Fixture mintafelhasználó létrehozásához teszteléshez."""
     user_data = {
         "email": "test@example.com",
         "password": "testpassword123",
@@ -70,8 +70,8 @@ def sample_user(database, client):
 
 @pytest.fixture
 def authenticated_client(client, sample_user):
-    """Fixture providing an authenticated test client."""
-    # Login
+    """Fixture hitelesített tesztklienst biztosít."""
+    # Bejelentkezés
     login_data = {
         "email": sample_user["email"],
         "password": sample_user["password"]

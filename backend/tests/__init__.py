@@ -1,1 +1,1 @@
-"""Test suite for Cinema Booking System."""
+"""Tesztcsomag a Mozi Jegyfoglaló rendszerhez."""
